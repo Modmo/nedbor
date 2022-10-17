@@ -9,9 +9,7 @@ For graphics (Radar, weather icons)
 * kitty 
 
 
-
-
-https://user-images.githubusercontent.com/35223282/196259350-35cf7bab-8a6a-4d5e-afde-5738f60399ec.mp4
+![nedbor](https://user-images.githubusercontent.com/35223282/196269220-510fd607-590d-4065-957c-b442ab268d38.gif)
 
 
 ## Usage
