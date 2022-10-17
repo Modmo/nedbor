@@ -8,7 +8,11 @@ Weather forecast using Met's API
 For graphics (Radar, weather icons)
 * kitty 
 
-https://user-images.githubusercontent.com/35223282/196256703-5e620ba5-ba30-4c18-baa9-756361b9f384.mp4
+
+
+
+https://user-images.githubusercontent.com/35223282/196259350-35cf7bab-8a6a-4d5e-afde-5738f60399ec.mp4
+
 
 ## Usage
 
