@@ -1,0 +1,74 @@
+#!/bin/bash
+
+#### Været med Met.no API
+## Requirements ##
+# * curl jq 	##
+##   Optional	##
+# * kitty	##
+#### Help function
+help () {
+    echo -e "Weather app manual \n Bilder og animasjoner støttes kun i Kitty Terminal \n -r Radarbilde over lokasjon\n -l Spesifiser By (feks: Paris)\n Uten options, kjøres bare: -l Oslo"
+}
+
+
+#### -l valg
+weather () {
+#### Setter Oslo som default
+    if [ -z $lokasjon ]; then
+        lokasjon=Oslo
+    fi
+#### Henter geocode basert på spesifisert lokasjon
+    curl --user-agent "mark" "https://nominatim.openstreetmap.org/search?q=$lokasjon&format=json" -o /tmp/latlong &> /dev/null
+#### Filtrerer ut latitude og longitude
+    lat=$(jq -r '.[].lat' /tmp/latlong | head -1)
+    lon=$(jq -r '.[].lon' /tmp/latlong | head -1)
+#### Henter forecast med lat og lon spesifisert over
+    curl -X GET --header 'Accept: application/json' "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=$lat&lon=$lon" -o /tmp/weatherapp.json &> /dev/null
+#### Henter div forecast data
+    temperatur=$(jq '.properties.timeseries[].data.instant.details.air_temperature' /tmp/weatherapp.json | head -1)
+    weathersymbol=$(jq -r '.properties.timeseries[].data.next_1_hours.summary.symbol_code' /tmp/weatherapp.json | head -1)
+#### Replacer _ med mellomrom for human readable værmelding
+    weather=${weathersymbol/_/ }
+#### Bruker forecast data til å hente vær svg
+    iconurl="https://api.met.no/images/weathericons/svg/$weathersymbol.svg"
+#### Sjekker om bruker kjører Kitty term for grafikk, else bare tekst
+    if [ -n "$KITTY_WINDOW_ID" ]; then
+        kitty +kitten icat --align left $iconurl
+    fi
+    echo -e "It is $temperatur\u00b0 and $weather outside in $lokasjon"
+}
+
+#### Radar bilde
+    radarimage () {
+#### Laster ned radarbilde for sør norge
+    curl -X GET --header 'Accept: image/gif' 'https://api.met.no/weatherapi/radar/2.0/?area=southeastern_norway&content=animation&type=5level_reflectivity' -o /tmp/radar.gif &> /dev/null
+#### Sjekker om bruker kjører Kitty term for grafikk, else error
+    if [ -n "$KITTY_WINDOW_ID" ]; then
+        kitty +kitten icat --align left /tmp/radar.gif
+    else
+        echo -e "Din terminal støtter ikke GIF"
+    fi
+
+}
+
+#### Leser flagg input
+while getopts "h r l:" flagg
+
+do
+
+    case "${flagg}" in
+
+        h) #Vis Hjelp
+        help;;
+
+        r) radarimage;;
+
+        l) lokasjon=${OPTARG} weather;;
+
+    esac
+
+done
+
+if [ $OPTIND == 1 ]; then
+    weather
+fi
