@@ -6,7 +6,9 @@ Weather forecast using Met's API
 * jq
 ### Optional
 For graphics (Radar, weather icons)
-* kitty
+* kitty 
+
+
 https://user-images.githubusercontent.com/35223282/196256165-531aec3c-726e-4a01-8aff-ff764c099559.mp4
 
 ## Usage
