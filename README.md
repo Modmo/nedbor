@@ -11,10 +11,10 @@ For graphics (Radar, weather icons)
 ## Usage
 
 Nedbor manual
- Bilder og animasjoner støttes kun i Kitty Terminal
- -r Radarbilde over lokasjon
- -l Spesifiser By (feks: Paris)
- Uten options, kjøres bare: -l Oslo
+ Bilder og animasjoner støttes kun i Kitty Terminal<br>
+ <code>-r Radarbilde over lokasjon<br>
+ -l Spesifiser By (feks: Paris)<br></code>
+ Uten options, kjøres bare: <code> -l Oslo </code>
 
 ### Example 1
 <code> nedbor </code>
