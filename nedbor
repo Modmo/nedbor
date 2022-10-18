@@ -55,11 +55,17 @@ weather () {
     temperatur=$(jq '.properties.timeseries[].data.instant.details.air_temperature' /tmp/weatherapp.json | head -1)
 
     weathersymbol=$(jq -r '.properties.timeseries[].data.next_1_hours.summary.symbol_code' /tmp/weatherapp.json | head -1)
-
-#### Bytter _ med mellomrom for human readable v\u00e6rmelding
+#### Henter weather description for symbol
+    curl -X GET --header 'Accept: application/json' 'https://api.met.no/weatherapi/weathericon/2.0/legends' -o /tmp/weatherdesc.json &> /dev/null
+   
+#### Vasker weathersymbol string, fjerner variants, feks day/night
     weatherfilter1=${weathersymbol/_/ }
     weatherfilter2=${weatherfilter1/ day/}
-    weather=${weatherfilter2/ night/}
+    weatherfiltered=${weatherfilter2/ night/}
+#### Bruker vasket string til å hente en description som kan printes
+    weatherdesc=$(jq -r ".$weatherfiltered.desc_en" /tmp/weatherdesc.json | head -1)
+#### Gjør string om til lowercase
+    weatherdesclowercase=${weatherdesc,,}
 
 #### Bruker forecast data til \u00e5 hente v\u00e6r svg
 
@@ -73,7 +79,7 @@ weather () {
 
     fi
 
-    echo -e "It is $temperatur\u00b0 and $weather outside in $lokasjon"
+    echo -e "It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
 #### Rydder filer
 rm /tmp/weatherapp.json
 rm /tmp/latlong
