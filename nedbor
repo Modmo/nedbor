@@ -57,8 +57,9 @@ weather () {
     weathersymbol=$(jq -r '.properties.timeseries[].data.next_1_hours.summary.symbol_code' /tmp/weatherapp.json | head -1)
 
 #### Bytter _ med mellomrom for human readable v\u00e6rmelding
-
-    weather=${weathersymbol/_/ }
+    weatherfilter1=${weathersymbol/_/ }
+    weatherfilter2=${weatherfilter1/ day/}
+    weather=${weatherfilter2/ night/}
 
 #### Bruker forecast data til \u00e5 hente v\u00e6r svg
 
