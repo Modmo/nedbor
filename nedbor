@@ -72,3 +72,8 @@ done
 if [ $OPTIND == 1 ]; then
     weather
 fi
+
+#### Rydding
+rm /tmp/radar.gif
+rm /tmp/latlong
+rm /tmp/weatherapp.json
