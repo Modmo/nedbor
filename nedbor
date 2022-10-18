@@ -1,15 +1,9 @@
 #!/bin/bash
 
-
-
 #### V\u00e6ret med Met.no API
-
 ## Requirements ##
-
 # * curl jq 	##
-
 ##   Optional	##
-
 # * kitty	##
 
 #### Help function
@@ -20,16 +14,10 @@ help () {
 
 }
 
-
-
-
-
 #### -l valg
-
 weather () {
 
 #### Setter Oslo som default
-
     if [ -z $lokasjon ]; then
 
         lokasjon=Oslo
@@ -37,23 +25,17 @@ weather () {
     fi
 
 #### Henter geocode basert p\u00e5 spesifisert lokasjon
-
     curl --user-agent "mark" "https://nominatim.openstreetmap.org/search?q=$lokasjon&format=json" -o /tmp/latlong &> /dev/null
 
 #### Filtrerer ut latitude og longitude
-
     lat=$(jq -r '.[].lat' /tmp/latlong | head -1)
-
     lon=$(jq -r '.[].lon' /tmp/latlong | head -1)
 
 #### Henter forecast med lat og lon spesifisert over
-
     curl -X GET --header 'Accept: application/json' "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=$lat&lon=$lon" -o /tmp/weatherapp.json &> /dev/null
 
 #### Henter div forecast data
-
     temperatur=$(jq '.properties.timeseries[].data.instant.details.air_temperature' /tmp/weatherapp.json | head -1)
-
     weathersymbol=$(jq -r '.properties.timeseries[].data.next_1_hours.summary.symbol_code' /tmp/weatherapp.json | head -1)
 #### Henter weather description for symbol
     curl -X GET --header 'Accept: application/json' 'https://api.met.no/weatherapi/weathericon/2.0/legends' -o /tmp/weatherdesc.json &> /dev/null
@@ -68,90 +50,48 @@ weather () {
     weatherdesclowercase=${weatherdesc,,}
 
 #### Bruker forecast data til \u00e5 hente v\u00e6r svg
-
     iconurl="https://api.met.no/images/weathericons/svg/$weathersymbol.svg"
 
 #### Sjekker om bruker kj\u00f8rer Kitty term for grafikk, else bare tekst
-
     if [ -n "$KITTY_WINDOW_ID" ]; then
-
         kitty +kitten icat --align left $iconurl
-
     fi
-
     echo -e "It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
 #### Rydder filer
 rm /tmp/weatherapp.json
 rm /tmp/latlong
+rm /tmp/weatherdesc.json
 }
 
-
-
 #### Radar bilde
-
     radarimage () {
 
 #### Laster ned radarbilde for s\u00f8r norge
-
     curl -X GET --header 'Accept: image/gif' 'https://api.met.no/weatherapi/radar/2.0/?area=southeastern_norway&content=animation&type=5level_reflectivity' -o /tmp/radar.gif &> /dev/null
 
 #### Sjekker om bruker kj\u00f8rer Kitty term for grafikk, else error
-
     if [ -n "$KITTY_WINDOW_ID" ]; then
-
         kitty +kitten icat --align left /tmp/radar.gif
-
     else
-
         echo -e "Din terminal st\u00f8tter ikke GIF"
-
     fi
-
 
 #### Rydder filer
 rm /tmp/radar.gif
 }
 
-
-
 #### Leser flagg input
-
 while getopts "h r l:" flagg
-
-
-
 do
-
-
-
     case "${flagg}" in
-
-
-
         h) #Vis Hjelp
-
         help;;
-
-
-
         r) radarimage;;
-
-
-
         l) lokasjon=${OPTARG} weather;;
-
-
-
     esac
-
-
-
 done
 
-
-
+#### Hvis programmet kjøres uten input, så kjører den weather function
 if [ $OPTIND == 1 ]; then
-
     weather
-
 fi
