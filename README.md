@@ -9,7 +9,9 @@ For graphics (Radar, weather icons)
 * kitty 
 
 
-![nedbor](https://user-images.githubusercontent.com/35223282/196269220-510fd607-590d-4065-957c-b442ab268d38.gif)
+
+
+![nedbor2](https://user-images.githubusercontent.com/35223282/196426502-6d95c94d-d86c-4d47-9fd1-200539dac35a.gif)
 
 
 ## Usage
@@ -28,4 +30,5 @@ Nedbor manual
 ### Example 2
 <code> nedbor -l Paris </code>
 #### Output
+![nedbor1](https://user-images.githubusercontent.com/35223282/196426486-1015e7e6-8792-496b-8839-404fa05b6158.gif)
 <code> It is 16.6° and lightrain outside in Paris </code>
