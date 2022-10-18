@@ -1,79 +1,150 @@
 #!/bin/bash
 
-#### Været med Met.no API
+
+
+#### V\u00e6ret med Met.no API
+
 ## Requirements ##
+
 # * curl jq 	##
+
 ##   Optional	##
+
 # * kitty	##
+
 #### Help function
+
 help () {
-    echo -e "Weather app manual \n Bilder og animasjoner støttes kun i Kitty Terminal \n -r Radarbilde over lokasjon\n -l Spesifiser By (feks: Paris)\n Uten options, kjøres bare: -l Oslo"
+
+    echo -e "Weather app manual \n Bilder og animasjoner st\u00f8ttes kun i Kitty Terminal \n -r Radarbilde over lokasjon\n -l Spesifiser By (feks: Paris)\n Uten options, kj\u00f8res bare: -l Oslo"
+
 }
+
+
+
 
 
 #### -l valg
+
 weather () {
+
 #### Setter Oslo som default
+
     if [ -z $lokasjon ]; then
+
         lokasjon=Oslo
+
     fi
-#### Henter geocode basert på spesifisert lokasjon
+
+#### Henter geocode basert p\u00e5 spesifisert lokasjon
+
     curl --user-agent "mark" "https://nominatim.openstreetmap.org/search?q=$lokasjon&format=json" -o /tmp/latlong &> /dev/null
+
 #### Filtrerer ut latitude og longitude
+
     lat=$(jq -r '.[].lat' /tmp/latlong | head -1)
+
     lon=$(jq -r '.[].lon' /tmp/latlong | head -1)
+
 #### Henter forecast med lat og lon spesifisert over
+
     curl -X GET --header 'Accept: application/json' "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=$lat&lon=$lon" -o /tmp/weatherapp.json &> /dev/null
+
 #### Henter div forecast data
+
     temperatur=$(jq '.properties.timeseries[].data.instant.details.air_temperature' /tmp/weatherapp.json | head -1)
+
     weathersymbol=$(jq -r '.properties.timeseries[].data.next_1_hours.summary.symbol_code' /tmp/weatherapp.json | head -1)
-#### Replacer _ med mellomrom for human readable værmelding
+
+#### Bytter _ med mellomrom for human readable v\u00e6rmelding
+
     weather=${weathersymbol/_/ }
-#### Bruker forecast data til å hente vær svg
+
+#### Bruker forecast data til \u00e5 hente v\u00e6r svg
+
     iconurl="https://api.met.no/images/weathericons/svg/$weathersymbol.svg"
-#### Sjekker om bruker kjører Kitty term for grafikk, else bare tekst
+
+#### Sjekker om bruker kj\u00f8rer Kitty term for grafikk, else bare tekst
+
     if [ -n "$KITTY_WINDOW_ID" ]; then
+
         kitty +kitten icat --align left $iconurl
+
     fi
+
     echo -e "It is $temperatur\u00b0 and $weather outside in $lokasjon"
+#### Rydder filer
+rm /tmp/weatherapp.json
+rm /tmp/latlong
 }
+
+
 
 #### Radar bilde
+
     radarimage () {
-#### Laster ned radarbilde for sør norge
+
+#### Laster ned radarbilde for s\u00f8r norge
+
     curl -X GET --header 'Accept: image/gif' 'https://api.met.no/weatherapi/radar/2.0/?area=southeastern_norway&content=animation&type=5level_reflectivity' -o /tmp/radar.gif &> /dev/null
-#### Sjekker om bruker kjører Kitty term for grafikk, else error
+
+#### Sjekker om bruker kj\u00f8rer Kitty term for grafikk, else error
+
     if [ -n "$KITTY_WINDOW_ID" ]; then
+
         kitty +kitten icat --align left /tmp/radar.gif
+
     else
-        echo -e "Din terminal støtter ikke GIF"
+
+        echo -e "Din terminal st\u00f8tter ikke GIF"
+
     fi
 
+
+#### Rydder filer
+rm /tmp/radar.gif
 }
 
+
+
 #### Leser flagg input
+
 while getopts "h r l:" flagg
+
+
 
 do
 
+
+
     case "${flagg}" in
 
+
+
         h) #Vis Hjelp
+
         help;;
+
+
 
         r) radarimage;;
 
+
+
         l) lokasjon=${OPTARG} weather;;
+
+
 
     esac
 
+
+
 done
 
-if [ $OPTIND == 1 ]; then
-    weather
-fi
 
-#### Rydding
-rm /tmp/radar.gif
-rm /tmp/latlong
-rm /tmp/weatherapp.json
+
+if [ $OPTIND == 1 ]; then
+
+    weather
+
+fi
