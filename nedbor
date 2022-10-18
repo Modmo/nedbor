@@ -54,11 +54,13 @@ altweathersymbol=$(grep $weatherfiltered /tmp/emojis | head -1 | awk '{print $NF
 
 #### Sjekker om bruker kj\u00f8rer Kitty term for grafikk, else bare tekst
     if [ -n "$KITTY_WINDOW_ID" ]; then
-        	kitty +kitten icat --align left $iconurl
-	else
-		echo -e "$altweathersymbol\n"
+                kitty +kitten icat --align left $iconurl
+                echo -e "It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
+        else
+                echo -e "$altweathersymbol It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
+
     fi
-    echo -e "It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
+
 #### Rydder filer
 rm /tmp/weatherapp.json
 rm /tmp/latlong
