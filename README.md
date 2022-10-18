@@ -30,5 +30,5 @@ Nedbor manual
 ### Example 2
 <code> nedbor -l Paris </code>
 #### Output
-![nedbor1](https://user-images.githubusercontent.com/35223282/196426486-1015e7e6-8792-496b-8839-404fa05b6158.gif)
+![nedbor1](https://user-images.githubusercontent.com/35223282/196426486-1015e7e6-8792-496b-8839-404fa05b6158.gif) <br>
 <code> It is 16.6° and lightrain outside in Paris </code>
