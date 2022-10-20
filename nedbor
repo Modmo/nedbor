@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #### V\u00e6ret med Met.no API
 ## Requirements ##
 # * curl jq 	##
@@ -7,12 +6,14 @@
 # * kitty	##
 
 #### Help function
+
 help () {
     echo -e "Weather app manual \n Bilder og animasjoner st\u00f8ttes kun i Kitty Terminal \n -r Radarbilde over lokasjon\n -l Spesifiser By (feks: Paris)\n Uten options, kj\u00f8res bare: -l Oslo"
 }
-#### -l valg
 
+#### -l valg
 weather () {
+
 #### Setter Oslo som default
     if [ -z $lokasjon ]; then
         lokasjon=Oslo
@@ -31,6 +32,7 @@ weather () {
 #### Henter div forecast data
     temperatur=$(jq '.properties.timeseries[].data.instant.details.air_temperature' /tmp/weatherapp.json 2>/dev/null | head -1)
     weathersymbol=$(jq -r '.properties.timeseries[].data.next_1_hours.summary.symbol_code' /tmp/weatherapp.json 2> /dev/null | head -1)
+
 #### Henter weather description for symbol
     curl -X GET --header 'Accept: application/json' 'https://api.met.no/weatherapi/weathericon/2.0/legends' -o /tmp/weatherdesc.json &> /dev/null
    
@@ -38,8 +40,10 @@ weather () {
     weatherfilter1=${weathersymbol/_/ }
     weatherfilter2=${weatherfilter1/ day/}
     weatherfiltered=${weatherfilter2/ night/}
+
 #### Bruker vasket string til å hente en description som kan printes
     weatherdesc=$(jq -r ".$weatherfiltered.desc_en" /tmp/weatherdesc.json 2> /dev/null | head -1)
+
 #### Gjør string om til lowercase
     weatherdesclowercase=${weatherdesc,,}
 
@@ -54,11 +58,10 @@ altweathersymbol=$(grep $weatherfiltered /tmp/emojis | head -1 | awk '{print $NF
 
 #### Sjekker om bruker kj\u00f8rer Kitty term for grafikk, else bare tekst
     if [ -n "$KITTY_WINDOW_ID" ]; then
-                kitty +kitten icat --align left $iconurl
+        	kitty +kitten icat --align left $iconurl
                 echo -e "It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
-        else
-                echo -e "$altweathersymbol It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
-
+	else
+		echo -e "$altweathersymbol It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
     fi
 
 #### Rydder filer
@@ -88,10 +91,12 @@ rm /tmp/radar.gif
 while getopts "h r l:" flagg
 do
     case "${flagg}" in
-        h) #Vis Hjelp
-        help;;
+
+        h) help;;
         r) radarimage;;
         l) lokasjon=${OPTARG} weather;;
+	    \?) help;;
+
     esac
 done
 
