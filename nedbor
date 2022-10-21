@@ -1,9 +1,5 @@
 #!/bin/bash
 #### V\u00e6ret med Met.no API
-## Requirements ##
-# * curl jq 	##
-##   Optional	##
-# * kitty	##
 
 #### Help function
 
@@ -13,66 +9,47 @@ help () {
 
 #### -l valg
 weather () {
-
 #### Setter Oslo som default
     if [ -z $lokasjon ]; then
         lokasjon=Oslo
     fi
 
 #### Henter geocode basert p\u00e5 spesifisert lokasjon
-    curl --user-agent "mark" "https://nominatim.openstreetmap.org/search?q=$lokasjon&format=json" -o /tmp/latlong &> /dev/null
+    latlon=$(curl --user-agent "mark" -s "https://nominatim.openstreetmap.org/search?q=$lokasjon&format=json")
 
 #### Filtrerer ut latitude og longitude
-    lat=$(jq -r '.[].lat' /tmp/latlong /dev/null | head -1)
-    lon=$(jq -r '.[].lon' /tmp/latlong /dev/null | head -1)
+    lat=$(echo $latlon | jq -r '.[].lat' | head -1)
+    lon=$(echo $latlon | jq -r '.[].lon' | head -1)
 
 #### Henter forecast med lat og lon spesifisert over
-    curl -X GET --header 'Accept: application/json' "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=$lat&lon=$lon" -o /tmp/weatherapp.json &> /dev/null
+    weatherdata=$(curl -sX GET --header 'Accept: application/json' "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=$lat&lon=$lon")
 
 #### Henter div forecast data
-    temperatur=$(jq '.properties.timeseries[].data.instant.details.air_temperature' /tmp/weatherapp.json 2>/dev/null | head -1)
-    weathersymbol=$(jq -r '.properties.timeseries[].data.next_1_hours.summary.symbol_code' /tmp/weatherapp.json 2> /dev/null | head -1)
-
-#### Henter weather description for symbol
-    curl -X GET --header 'Accept: application/json' 'https://api.met.no/weatherapi/weathericon/2.0/legends' -o /tmp/weatherdesc.json &> /dev/null
-   
+    temperatur=$(echo $weatherdata | jq '.properties.timeseries[].data.instant.details.air_temperature' | head -1)
+    weathersymbol=$(echo $weatherdata | jq -r '.properties.timeseries[].data.next_1_hours.summary.symbol_code' | head -1)
 #### Vasker weathersymbol string, fjerner variants, feks day/night
     weatherfilter1=${weathersymbol/_/ }
     weatherfilter2=${weatherfilter1/ day/}
     weatherfiltered=${weatherfilter2/ night/}
 
 #### Bruker vasket string til å hente en description som kan printes
-    weatherdesc=$(jq -r ".$weatherfiltered.desc_en" /tmp/weatherdesc.json 2> /dev/null | head -1)
-
-#### Gjør string om til lowercase
+#### Henter weather description for symbol og endrer alt til lowercase
+    weatherdesc=$(curl -sX GET --header 'Accept: application/json' 'https://api.met.no/weatherapi/weathericon/2.0/legends' | jq -r ".$weatherfiltered.desc_en")
     weatherdesclowercase=${weatherdesc,,}
 
-#### Bruker forecast data til \u00e5 hente v\u00e6r svg
-    iconurl="https://api.met.no/images/weathericons/svg/$weathersymbol.svg"
-
-#### Liste over weathercodes og godt nok matchende emojis
-echo -e 'clearsky \U0001f31e \ncloudy \u2601\nfair \U0001f324\nfog \U0001f32b\nheavyrain \U0001f327\nheavyrainandthunder \u26c8\nheavyrainshowers \U0001f327\nheavyrainshowersandthunder \u26c8\nheavysleet \U0001f327\nheavysleetandthunder \u26c8\nheavysleetshowers \U0001f327\nheavysleetshowersandthunder \u26c8\nheavysnow \U0001f328\nheavysnowandthunder \u26c8\nheavysnowshowers \U0001f328\nheavysnowshowersandthunder \U0001f328\nlightrain \U0001f326\nlightrainandthunder \u26c8\nlightrainshowers \U0001f327\nlightrainshowersandthunder \u26c8\nlightsleet \U0001f327\nlightsleetandthunder \u26c8\nlightsleetshowers \U0001f327\nlightsnow \U0001f328\nlightsnowandthunder \u26c8\nlightsnowshowers \U0001f328\nlightssleetshowersandthunder \u26c8\nlightssnowshowersandthunder \u26c8\npartlycloudy \u26c5\nrain \U0001f327\nrainandthunder \u26c8\nrainshowers \U0001f327\nrainshowersandthunder \u26c8\nsleet \U0001f327\nsleetandthunder \u26c8\nsleetshowers \U0001f327\nsleetshowersandthunder \u26c8\nsnow \U0001f328\nsnowandthunder \u26c8\nsnowshowers \U0001f328\nsnowshowersandthunder \u26c8\n' > /tmp/emojis
-
-#### Velger emoji fra listen
-altweathersymbol=$(grep $weatherfiltered /tmp/emojis | head -1 | awk '{print $NF}' )
-
-#### Sjekker om bruker kj\u00f8rer Kitty term for grafikk, else bare tekst
     if [ -n "$KITTY_WINDOW_ID" ]; then
+            iconurl="https://api.met.no/images/weathericons/svg/$weathersymbol.svg"
         	kitty +kitten icat --align left $iconurl
                 echo -e "It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
 	else
-		echo -e "$altweathersymbol It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
+        emoji='clearsky \U0001f31e \ncloudy \u2601\nfair \U0001f324\nfog \U0001f32b\nheavyrain \U0001f327\nheavyrainandthunder \u26c8\nheavyrainshowers \U0001f327\nheavyrainshowersandthunder \u26c8\nheavysleet \U0001f327\nheavysleetandthunder \u26c8\nheavysleetshowers \U0001f327\nheavysleetshowersandthunder \u26c8\nheavysnow \U0001f328\nheavysnowandthunder \u26c8\nheavysnowshowers \U0001f328\nheavysnowshowersandthunder \U0001f328\nlightrain \U0001f326\nlightrainandthunder \u26c8\nlightrainshowers \U0001f327\nlightrainshowersandthunder \u26c8\nlightsleet \U0001f327\nlightsleetandthunder \u26c8\nlightsleetshowers \U0001f327\nlightsnow \U0001f328\nlightsnowandthunder \u26c8\nlightsnowshowers \U0001f328\nlightssleetshowersandthunder \u26c8\nlightssnowshowersandthunder \u26c8\npartlycloudy \u26c5\nrain \U0001f327\nrainandthunder \u26c8\nrainshowers \U0001f327\nrainshowersandthunder \u26c8\nsleet \U0001f327\nsleetandthunder \u26c8\nsleetshowers \U0001f327\nsleetshowersandthunder \u26c8\nsnow \U0001f328\nsnowandthunder \u26c8\nsnowshowers \U0001f328\nsnowshowersandthunder \u26c8\n'
+        altweathersymbol=$(echo $emoji | grep $weatherfiltered | head -1 | awk '{print $NF}' )
+		echo -e "$altweathersymbol   It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
     fi
-
-#### Rydder filer
-rm /tmp/weatherapp.json
-rm /tmp/latlong
-rm /tmp/emojis
 }
 
 #### Radar bilde
     radarimage () {
-
 #### Laster ned radarbilde for s\u00f8r norge
     curl -X GET --header 'Accept: image/gif' 'https://api.met.no/weatherapi/radar/2.0/?area=southeastern_norway&content=animation&type=5level_reflectivity' -o /tmp/radar.gif &> /dev/null
 
@@ -91,12 +68,10 @@ rm /tmp/radar.gif
 while getopts "h r l:" flagg
 do
     case "${flagg}" in
-
         h) help;;
         r) radarimage;;
         l) lokasjon=${OPTARG} weather;;
 	    \?) help;;
-
     esac
 done
 
