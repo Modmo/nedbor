@@ -9,9 +9,12 @@ help () {
 
 #### -l valg
 weather () {
-#### Setter Oslo som default
+#### Setter Oslo som default og time til 1hr
     if [ -z $lokasjon ]; then
         lokasjon=Oslo
+    fi
+    if [ -z $time ]; then
+	   time=1
     fi
 
 #### Henter geocode basert p\u00e5 spesifisert lokasjon
@@ -26,7 +29,7 @@ weather () {
 
 #### Henter div forecast data
     temperatur=$(echo $weatherdata | jq '.properties.timeseries[].data.instant.details.air_temperature' | head -1)
-    weathersymbol=$(echo $weatherdata | jq -r '.properties.timeseries[].data.next_1_hours.summary.symbol_code' | head -1)
+    weathersymbol=$(echo $weatherdata | jq -r ".properties.timeseries[].data.next_"$time"_hours.summary.symbol_code" | head -1)
 #### Vasker weathersymbol string, fjerner variants, feks day/night
     weatherfilter1=${weathersymbol/_/ }
     weatherfilter2=${weatherfilter1/ day/}
@@ -37,14 +40,30 @@ weather () {
     weatherdesc=$(curl -sX GET --header 'Accept: application/json' 'https://api.met.no/weatherapi/weathericon/2.0/legends' | jq -r ".$weatherfiltered.desc_en")
     weatherdesclowercase=${weatherdesc,,}
 
+#### Gjør time om til meldingstekst tid
+#
+if [ "$time" -eq 1 ]; then
+	tid=now
+elif [ "$time" -eq 6 ]; then
+	tid=$(date -d '+6 hour' +"%H:%M")
+else 
+	tid=$(date -d '+12 hour' +"%H:%M")
+fi
+
+#### Messages
+#based på terminal, time osv
+#
+message1="It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon $tid"
+message2="$altweathersymbol   It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon $tid"
+
     if [ -n "$KITTY_WINDOW_ID" ]; then
             iconurl="https://api.met.no/images/weathericons/svg/$weathersymbol.svg"
         	kitty +kitten icat --align left $iconurl
-                echo -e "It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
+                echo -e $message1
 	else
         emoji='clearsky \U0001f31e \ncloudy \u2601\nfair \U0001f324\nfog \U0001f32b\nheavyrain \U0001f327\nheavyrainandthunder \u26c8\nheavyrainshowers \U0001f327\nheavyrainshowersandthunder \u26c8\nheavysleet \U0001f327\nheavysleetandthunder \u26c8\nheavysleetshowers \U0001f327\nheavysleetshowersandthunder \u26c8\nheavysnow \U0001f328\nheavysnowandthunder \u26c8\nheavysnowshowers \U0001f328\nheavysnowshowersandthunder \U0001f328\nlightrain \U0001f326\nlightrainandthunder \u26c8\nlightrainshowers \U0001f327\nlightrainshowersandthunder \u26c8\nlightsleet \U0001f327\nlightsleetandthunder \u26c8\nlightsleetshowers \U0001f327\nlightsnow \U0001f328\nlightsnowandthunder \u26c8\nlightsnowshowers \U0001f328\nlightssleetshowersandthunder \u26c8\nlightssnowshowersandthunder \u26c8\npartlycloudy \u26c5\nrain \U0001f327\nrainandthunder \u26c8\nrainshowers \U0001f327\nrainshowersandthunder \u26c8\nsleet \U0001f327\nsleetandthunder \u26c8\nsleetshowers \U0001f327\nsleetshowersandthunder \u26c8\nsnow \U0001f328\nsnowandthunder \u26c8\nsnowshowers \U0001f328\nsnowshowersandthunder \u26c8\n'
         altweathersymbol=$(echo $emoji | grep $weatherfiltered | head -1 | awk '{print $NF}' )
-		echo -e "$altweathersymbol   It is $temperatur\u00b0 and $weatherdesclowercase outside in $lokasjon"
+		echo -e $message2
     fi
 }
 
@@ -65,13 +84,15 @@ rm /tmp/radar.gif
 }
 
 #### Leser flagg input
-while getopts "h r l:" flagg
+while getopts "h r e d l:" flagg
 do
     case "${flagg}" in
         h) help;;
         r) radarimage;;
+	e) time=6 weather;;
+	d) time=12 weather;;
         l) lokasjon=${OPTARG} weather;;
-	    \?) help;;
+	   \?) help;;
     esac
 done
 
