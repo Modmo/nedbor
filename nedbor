@@ -4,7 +4,7 @@
 #### Help function
 
 help () {
-    echo -e "Weather app manual \n Bilder og animasjoner st\u00f8ttes kun i Kitty Terminal \n -r Radarbilde over lokasjon\n -l Spesifiser By (feks: Paris)\n Uten options, kj\u00f8res bare: -l Oslo"
+    echo -e "Weather app manual \n Bilder og animasjoner st\u00f8ttes kun i Kitty Terminal \n -r Radarbilde over lokasjon\n -l Spesifiser By (feks: Paris)\n Uten options, kj\u00f8res bare: -l Oslo \n -e om 6 timer \n -d om 12 timer"
 }
 
 #### -l valg
