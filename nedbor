@@ -70,7 +70,7 @@ fi
     if [ -n "$KITTY_WINDOW_ID" ]; then
         kitty +kitten icat --align left /tmp/radar.gif
     else
-        echo -e "Din terminal st\u00f8tter ikke GIF"
+        mpv --no-config --vo=tct /tmp/radar.gif
     fi
 
 #### Rydder filer
