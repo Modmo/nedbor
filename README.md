@@ -5,7 +5,9 @@ Weather forecast using Met's API
 * curl
 * jq
 ### Optional
-For graphics (Radar, weather icons)
+For block graphics (Radar)
+* mpv
+For proper graphics (Radar, weather icons)
 * kitty 
 
 
