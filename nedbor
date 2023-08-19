@@ -9,9 +9,9 @@ help () {
 
 #### -l valg
 weather () {
-#### Setter Oslo som default og time til 1hr
+#### Setter lokasjon som er satt i timedatectl som default og time til 1hr
     if [ -z $lokasjon ]; then
-        lokasjon=Oslo
+        lokasjon=$(timedatectl | grep -Po '\w+\/\K\w+')
     fi
     if [ -z $time ]; then
 	   time=1
