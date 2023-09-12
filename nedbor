@@ -9,12 +9,12 @@ help () {
 
 #### -l valg
 weather () {
-#### Setter lokasjon som er satt i timedatectl som default og time til 1hr
+#### Setter Oslo som default og time til 1hr
     if [ -z $lokasjon ]; then
-        lokasjon=$(timedatectl | grep -Po '\w+\/\K\w+')
+        lokasjon=Oslo
     fi
     if [ -z $time ]; then
-	   time=1
+	  time=1
     fi
 
 #### Henter geocode basert p\u00e5 spesifisert lokasjon
@@ -37,7 +37,7 @@ weather () {
 
 #### Bruker vasket string til å hente en description som kan printes
 #### Henter weather description for symbol og endrer alt til lowercase
-    weatherdesc=$(curl -sX GET --header 'Accept: application/json' 'https://api.met.no/weatherapi/weathericon/2.0/legends' | jq -r ".$weatherfiltered.desc_en")
+    weatherdesc=$(curl -s https://raw.githubusercontent.com/metno/weathericons/main/weather/legend.csv | grep -Po "$weatherfiltered,\K(\w+ ?){1,}")
     weatherdesclowercase=${weatherdesc,,}
 
 #### Gjør time om til meldingstekst tid
@@ -70,7 +70,7 @@ fi
     if [ -n "$KITTY_WINDOW_ID" ]; then
         kitty +kitten icat --align left /tmp/radar.gif
     else
-        mpv --no-config --vo=tct /tmp/radar.gif
+	mpv --no-config --vo=tct /tmp/radar.gif
     fi
 
 #### Rydder filer
@@ -86,7 +86,7 @@ do
 	e) time=6 weather;;
 	d) time=12 weather;;
         l) lokasjon=${OPTARG} weather;;
-	   \?) help;;
+	  \?) help;;
     esac
 done
 
